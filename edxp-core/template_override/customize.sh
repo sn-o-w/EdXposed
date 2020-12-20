@@ -301,27 +301,24 @@ ui_print "- Copying framework libraries"
 
 rm -rf "/data/misc/$MISC_PATH/framework"
 mv "${MODPATH}/system/framework" "/data/misc/$MISC_PATH/framework"
-set_perm_recursive /data/misc/$MISC_PATH/framework root root 0755 0644 "u:object_r:magisk_file:s0" || abort "! Can't set permission"
-
-mv "${MODPATH}/system/lib/libriru_edxp.so" "${MODPATH}/system/lib/${LIB_RIRU_EDXP}"
-if [[ "${IS64BIT}" == true ]]; then
-    mv "${MODPATH}/system/lib64/libriru_edxp.so" "${MODPATH}/system/lib64/${LIB_RIRU_EDXP}"
-fi
 
 if [[ "${VARIANTS}" == "SandHook" ]]; then
-    mv "${MODPATH}/system/lib/libsandhook.edxp.so" "${MODPATH}/system/lib/${LIB_SANDHOOK_EDXP}"
-    if [[ "${IS64BIT}" == true ]]; then
-        mv "${MODPATH}/system/lib64/libsandhook.edxp.so" "${MODPATH}/system/lib64/${LIB_SANDHOOK_EDXP}"
-    fi
+  mkdir -p "/data/misc/$MISC_PATH/framework/lib"
+  mv "${MODPATH}/system/lib/libsandhook.edxp.so" "/data/misc/$MISC_PATH/framework/lib/libsandhook.edxp.so"
+  if [ "$IS64BIT" = true ]; then
+    mkdir -p "/data/misc/$MISC_PATH/framework/lib64"
+    mv "${MODPATH}/system/lib64/libsandhook.edxp.so" "/data/misc/$MISC_PATH/framework/lib64/libsandhook.edxp.so"
+  fi
 fi
+set_perm_recursive /data/misc/$MISC_PATH/framework root root 0755 0644 "u:object_r:magisk_file:s0" || abortC "! ${LANG_CUST_ERR_PERM}"
 
 ui_print "- Resetting libraries path"
 sed -i 's:libriru_edxp.so:'"${LIB_RIRU_EDXP}"':g' "${MODPATH}/system/lib/${LIB_RIRU_EDXP}"
 sed -i 's:libsandhook.edxp.so:'"${LIB_SANDHOOK_EDXP}"':g' "${MODPATH}/system/lib/${LIB_RIRU_EDXP}"
 
+mv "${MODPATH}/system/lib/libriru_edxp.so" "${MODPATH}/system/lib/${LIB_RIRU_EDXP}"
 if [[ "${IS64BIT}" == true ]]; then
-    sed -i 's:libriru_edxp.so:'"${LIB_RIRU_EDXP}"':g' "${MODPATH}/system/lib64/${LIB_RIRU_EDXP}"
-    sed -i 's:libsandhook.edxp.so:'"${LIB_SANDHOOK_EDXP}"':g' "${MODPATH}/system/lib64/${LIB_RIRU_EDXP}"
+    mv "${MODPATH}/system/lib64/libriru_edxp.so" "${MODPATH}/system/lib64/${LIB_RIRU_EDXP}"
 fi
 
 ui_print "- Removing old configuration"
