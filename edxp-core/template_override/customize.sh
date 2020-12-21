@@ -27,6 +27,9 @@ RIRU_EDXP="$(getRandomNameExist 4 "libriru_" ".so" "
 RIRU_MODULES="${RIRU_PATH}/modules"
 RIRU_TARGET="${RIRU_MODULES}/${RIRU_EDXP}"
 
+IS_MAGISK_LITE=false
+[[ "${MAGISK_VER:0-5}" == "-lite" ]] && IS_MAGISK_LITE=true
+
 VERSION=$(grep_prop version "${TMPDIR}/module.prop")
 RIRU_MIN_API_VERSION=$(grep_prop api "${TMPDIR}/module.prop")
 
@@ -162,19 +165,87 @@ check_magisk_version() {
     [[ ${MAGISK_VER_CODE} -eq 20101 ]] && update_new_magisk
 }
 
+### lang start ###
+# Default en_US
+# customize
+LANG_CUST_INST_VERSION="version"
+LANG_CUST_INST_EXT_FILES="Extracting module files"
+LANG_CUST_INST_EXT_LIB_X86="Extracting x86 libraries"
+LANG_CUST_INST_EXT_LIB_X64="Extracting x86_64 libraries"
+LANG_CUST_INST_EXT_LIB_ARM="Extracting arm libraries"
+LANG_CUST_INST_EXT_LIB_ARM64="Extracting arm64 libraries"
+LANG_CUST_INST_STUB="Installing stub manager"
+LANG_CUST_INST_CONF_CREATE="Creating configuration directories"
+LANG_CUST_INST_CONF_OLD="Use previous path"
+LANG_CUST_INST_CONF_NEW="Use new path"
+LANG_CUST_INST_COPY_LIB="Copying framework libraries"
+LANG_CUST_INST_RAND_LIB_1="Resetting libraries path"
+LANG_CUST_INST_RAND_LIB_2="It may take a long time, please be patient"
+LANG_CUST_INST_RAND_LIB_3="Processing 32 bit libraries"
+LANG_CUST_INST_RAND_LIB_4="Processing 64 bit libraries"
+LANG_CUST_INST_REM_OLDCONF="Removing old configuration"
+LANG_CUST_INST_COPT_EXTRA="Copying extra files"
+LANG_CUST_INST_DONE="Welcome to"
+
+LANG_CUST_ERR_VERIFY_FAIL_1="Unable to extract verify tool!"
+LANG_CUST_ERR_VERIFY_FAIL_2="This zip may be corrupted, please try downloading again"
+LANG_CUST_ERR_STUB="Stub install failed! Do not forget install EdXposed Manager manually"
+LANG_CUST_ERR_PERM="Can't set permission"
+LANG_CUST_ERR_CONF_CREATE="Can't create configuration path"
+LANG_CUST_ERR_CONF_STORE="Can't store configuration path"
+LANG_CUST_ERR_CONF_FIRST="Can't create first install flag"
+LANG_CUST_ERR_CONF_UNINST="Can't write uninstall script"
+LANG_CUST_ERR_EXTRA_CREATE="Can't create"
+
+# verify
+LANG_VERIFY_SUCCESS="Verified"
+
+LANG_VERIFY_ERR_MISMATCH="Failed to verify"
+LANG_VERIFY_ERR_NOT_EXIST="not exists"
+LANG_VERIFY_ERR_NOTICE="This zip may be corrupted, please try downloading again"
+
+# util_functions
+LANG_UTIL_PLATFORM="Device platform"
+
+LANG_UTIL_ERR_RIRU_NOT_FOUND_1="is not installed"
+LANG_UTIL_ERR_RIRU_NOT_FOUND_2="Please install Riru from Magisk Manager"
+LANG_UTIL_ERR_RIRU_LOW_1="or above is required"
+LANG_UTIL_ERR_RIRU_LOW_2="Please upgrade Riru from Magisk Manager"
+LANG_UTIL_ERR_REQUIRE_YAHFA_1="Architecture x86 or x86_64 detected"
+LANG_UTIL_ERR_REQUIRE_YAHFA_2="Only YAHFA variant supports x86 or x86_64 architecture devices"
+LANG_UTIL_ERR_REQUIRE_YAHFA_3="You can download from 'Magisk Manager' or 'EdXposed Manager'"
+LANG_UTIL_ERR_ANDROID_UNSUPPORT_1="Unsupported Android version"
+LANG_UTIL_ERR_ANDROID_UNSUPPORT_2="(below Oreo)"
+LANG_UTIL_ERR_ANDROID_UNSUPPORT_3="Learn more from our GitHub Wiki"
+LANG_UTIL_ERR_PLATFORM_UNSUPPORT="Unsupported platform"
+LANG_UTIL_ERR_DUPINST_1="Duplicate installation is now allowed"
+LANG_UTIL_ERR_DUPINST_2="Remove"
+LANG_UTIL_ERR_DUPINST_3="and reboot to install again"
+
+# Load lang
+if [[ ${BOOTMODE} == true ]]; then
+  locale=$(getprop persist.sys.locale|awk -F "-" '{print $1"_"$NF}')
+  [[ ${locale} == "" ]] && locale=$(settings get system system_locales|awk -F "," '{print $1}'|awk -F "-" '{print $1"_"$NF}')
+  file=${locale}.sh
+  unzip -o "$ZIPFILE" "${file}" -d "$TMPDIR" >&2
+  unzip -o "$ZIPFILE" "${file}.s" -d "$TMPDIR" >&2
+  (echo "$(cat "${TMPDIR}/${file}.s")  ${TMPDIR}/${file}" | sha256sum -c -s -) && . "${TMPDIR}/${file}"
+fi
+### lang end ###
+
 edxp_check_architecture() {
     if [[ "${MODID}" == "riru_edxposed_sandhook" ]]; then
         VARIANTS="SandHook"
     else
         VARIANTS="YAHFA"
     fi
-    ui_print "- EdXposed Variant: ${VARIANTS}"
+    ui_print "- EdXposed Variant: ${VARIANT}"
     if [[ "${ARCH}" != "arm" && "${ARCH}" != "arm64" && "${ARCH}" != "x86" && "${ARCH}" != "x64" ]]; then
         abortC "! Unsupported platform: ${ARCH}"
     else
         ui_print "- Device platform: ${ARCH}"
         if [[ "${ARCH}" == "x86" || "${ARCH}" == "x64" ]]; then
-            if [[ "${VARIANTS}" == "SandHook" ]]; then
+            if [[ "${VARIANT}" == "SandHook" ]]; then
                 require_yahfa
             fi
         fi
@@ -245,14 +316,14 @@ if [ "$ARCH" = "x86" ] || [ "$ARCH" = "x64" ]; then
 else
   ui_print "- Extracting arm libraries"
   extract "$ZIPFILE" 'system/lib/libriru_edxp.so' "$MODPATH"
-  if [[ "${VARIANTS}" == "SandHook" ]]; then
+  if [[ "${VARIANT}" == "SandHook" ]]; then
     extract "$ZIPFILE" 'system/lib/libsandhook.edxp.so' "$MODPATH"
   fi
 
   if [ "$IS64BIT" = true ]; then
     ui_print "- Extracting arm64 libraries"
     extract "$ZIPFILE" 'system/lib64/libriru_edxp.so' "$MODPATH"
-    if [[ "${VARIANTS}" == "SandHook" ]]; then
+    if [[ "${VARIANT}" == "SandHook" ]]; then
      extract "$ZIPFILE" 'system/lib64/libsandhook.edxp.so' "$MODPATH"
     fi
   fi
@@ -302,7 +373,7 @@ ui_print "- Copying framework libraries"
 rm -rf "/data/misc/$MISC_PATH/framework"
 mv "${MODPATH}/system/framework" "/data/misc/$MISC_PATH/framework"
 
-if [[ "${VARIANTS}" == "SandHook" ]]; then
+if [[ "${VARIANT}" == "SandHook" ]]; then
   mkdir -p "/data/misc/$MISC_PATH/framework/lib"
   mv "${MODPATH}/system/lib/libsandhook.edxp.so" "/data/misc/$MISC_PATH/framework/lib/libsandhook.edxp.so"
   if [ "$IS64BIT" = true ]; then
