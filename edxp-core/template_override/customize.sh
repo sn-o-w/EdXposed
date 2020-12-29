@@ -28,7 +28,10 @@ RIRU_MODULES="${RIRU_PATH}/modules"
 RIRU_TARGET="${RIRU_MODULES}/${RIRU_EDXP}"
 
 IS_MAGISK_LITE=false
+MODULES_PATH="modules"
 [[ "${MAGISK_VER:0-5}" == "-lite" ]] && IS_MAGISK_LITE=true
+[[ "${IS_MAGISK_LITE}" == "true" ]] && MODULES_PATH="lite_modules"
+
 
 VERSION=$(grep_prop version "${TMPDIR}/module.prop")
 RIRU_MIN_API_VERSION=$(grep_prop api "${TMPDIR}/module.prop")
@@ -179,10 +182,6 @@ LANG_CUST_INST_CONF_CREATE="Creating configuration directories"
 LANG_CUST_INST_CONF_OLD="Use previous path"
 LANG_CUST_INST_CONF_NEW="Use new path"
 LANG_CUST_INST_COPY_LIB="Copying framework libraries"
-LANG_CUST_INST_RAND_LIB_1="Resetting libraries path"
-LANG_CUST_INST_RAND_LIB_2="It may take a long time, please be patient"
-LANG_CUST_INST_RAND_LIB_3="Processing 32 bit libraries"
-LANG_CUST_INST_RAND_LIB_4="Processing 64 bit libraries"
 LANG_CUST_INST_REM_OLDCONF="Removing old configuration"
 LANG_CUST_INST_COPT_EXTRA="Copying extra files"
 LANG_CUST_INST_DONE="Welcome to"
@@ -364,9 +363,8 @@ touch /data/adb/edxp/new_install || abort "! Can't touch new install"
 set_perm_recursive /data/adb/edxp root root 0700 0600 "u:object_r:magisk_file:s0" || abort "! Can't set permission"
 mkdir -p /data/misc/$MISC_PATH || abort "! Can't create configuration path"
 set_perm /data/misc/$MISC_PATH root root 0771 "u:object_r:magisk_file:s0" || abort "! Can't set permission"
-echo "rm -rf /data/misc/$MISC_PATH" >> "$MODPATH/uninstall.sh" || abort "! Can't write uninstall.sh"
+echo "[[ -f /data/adb/edxp/keep_data ]] || rm -rf /data/misc/$MISC_PATH" >> "${MODPATH}/uninstall.sh" || abortC "! ${LANG_CUST_ERR_CONF_UNINST}"
 echo "[[ -f /data/adb/edxp/new_install ]] || rm -rf /data/adb/edxp" >> "$MODPATH/uninstall.sh" || abort "! Can't write uninstall.sh"
-
 
 ui_print "- Copying framework libraries"
 
@@ -425,6 +423,8 @@ echo "${RIRU_EDXP}">"${RIRU_MODULES}/edxp.prop"
 rm "${RIRU_TARGET}/module.prop"
 
 cp "${MODPATH}/module.prop" "${RIRU_TARGET}/module.prop" || abort "! Can't create ${RIRU_TARGET}/module.prop"
+
+rm -f /data/adb/edxp/keep_data
 
 set_perm_recursive "${MODPATH}" 0 0 0755 0644
 ui_print "- Welcome to EdXposed ${VERSION}!"
