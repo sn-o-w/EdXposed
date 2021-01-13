@@ -18,6 +18,7 @@ android {
     }
 
     ndkVersion androidCompileNdkVersion
+    buildToolsVersion androidCompileBuildToolsVersion
 }
 
 dependencies {
