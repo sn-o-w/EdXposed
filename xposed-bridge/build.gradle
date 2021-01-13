@@ -24,6 +24,7 @@ android {
             buildConfigField "int", "API_CODE", "$apiCode"
         }
     }
+    buildToolsVersion androidCompileBuildToolsVersion
 }
 
 // Make sure that hiddenapistubs are placed before the Android SDK in xposed-bridge.iml
@@ -52,5 +53,4 @@ afterEvaluate {
     tasks.withType(JavaCompile) {
         options.compilerArgs.add("-Xbootclasspath/p:${hiddenApiStubJarFilePath}")
     }
-
 }

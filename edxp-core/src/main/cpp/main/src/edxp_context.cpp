@@ -182,7 +182,6 @@ namespace edxp {
         return ret;
     }
 
-
     inline void Context::PrepareJavaEnv(JNIEnv *env) {
         InjectDexAndInit(env);
     }
@@ -437,7 +436,6 @@ namespace edxp {
         }
         return 0;
     }
-
 }
 
 #pragma clang diagnostic pop

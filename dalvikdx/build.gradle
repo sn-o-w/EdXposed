@@ -7,6 +7,7 @@ repositories {
 android {
     compileSdkVersion androidCompileSdkVersion.toInteger()
     ndkVersion androidCompileNdkVersion
+    buildToolsVersion androidCompileBuildToolsVersion
 }
 
 afterEvaluate {

@@ -3,6 +3,7 @@ apply plugin: 'com.android.library'
 android {
     compileSdkVersion androidCompileSdkVersion.toInteger()
     ndkVersion androidCompileNdkVersion
+    buildToolsVersion androidCompileBuildToolsVersion
 }
 
 task makeStubJar(type: Jar){
