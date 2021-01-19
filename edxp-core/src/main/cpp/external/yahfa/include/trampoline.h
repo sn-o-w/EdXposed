@@ -7,11 +7,11 @@
 
 extern int SDKVersion;
 
+extern unsigned char trampoline[];
 extern unsigned char trampolineForBackup[];
 
+void* doInitHookCap(size_t cap);
 void setupTrampoline(uint8_t offset);
 void *genTrampoline(void *toMethod, void *entrypoint);
-
-#define TRAMPOLINE_SPACE_SIZE 4096 // 4k mem page size
 
 #endif //YAHFA_TAMPOLINE_H

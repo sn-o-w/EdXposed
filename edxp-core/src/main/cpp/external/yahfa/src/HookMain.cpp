@@ -165,7 +165,7 @@ static int doBackupAndHook(void *targetMethod, void *hookMethod, void *backupMet
     if (SDKVersion >= __ANDROID_API_N__) {
         setNonCompilable(targetMethod);
 //        setNonCompilable(hookMethod);
-        if (backupMethod) setNonCompilable(backupMethod);
+        if(backupMethod) setNonCompilable(backupMethod);
     }
 
     if (backupMethod) {// do method backup
